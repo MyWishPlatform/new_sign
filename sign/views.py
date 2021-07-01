@@ -26,7 +26,7 @@ def sign_view(request):
         raise PermissionDenied
 
     if account.network_type == NetworkType.ETHEREUM_LIKE:
-        to = tx_params['dest']
+        to = tx_params['to']
         value = tx_params['value']
         data = tx_params['data']
         gasPrice = tx_params['gas_price']
