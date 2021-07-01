@@ -26,14 +26,7 @@ def sign_view(request):
         raise PermissionDenied
 
     if account.network_type == NetworkType.ETHEREUM_LIKE:
-        to = tx_params['to']
-        value = tx_params['value']
-        data = tx_params['data']
-        gasPrice = tx_params['gas_price']
-        gas = tx_params['gaslimit']
-        nonce = tx_params['nonce']
-        transact_dict = {'to': to, 'gas':gas, 'gasPrice': gasPrice, 'value': value, 'data': data, 'nonce': nonce}
-        signed_tx = Web3().eth.account.sign_transaction(transact_dict, account.private_key)
+        signed_tx = Web3().eth.account.sign_transaction(tx_params, account.private_key)
         raw_hex_tx = signed_tx.rawTransaction.hex()
         return JsonResponse({'signed_tx': raw_hex_tx})
     elif account.network_type == NetworkType.BINANCE_CHAIN:
