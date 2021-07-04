@@ -19,6 +19,7 @@ def sign_view(request):
         raise PermissionDenied
 
     tx_params = request.data
+    tx_params['to'] = Web3.toChecksumAddress(tx_params['to'])
 
     try:
         account = BlockchainAccount.objects.get(address=tx_params.pop('from'))
