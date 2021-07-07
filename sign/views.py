@@ -6,7 +6,7 @@ from sign.models import BlockchainAccount, ClientSecret, NetworkType
 from rest_framework.exceptions import PermissionDenied
 from hdwallet import BIP44HDWallet
 from hdwallet.symbols import ETH
-from settings import ROOT_EXT_KEY
+from sign.settings import ROOT_EXT_KEY
 
 
 def key_resolver(key_id, algorithm):  # used for HTTPSignatureAuth.verify(), do not change arg names!
