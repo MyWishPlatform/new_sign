@@ -4,6 +4,9 @@ from requests_http_signature import HTTPSignatureAuth
 from rest_framework.decorators import api_view
 from sign.models import BlockchainAccount, ClientSecret, NetworkType
 from rest_framework.exceptions import PermissionDenied
+from hdwallet import BIP44HDWallet
+from hdwallet.symbols import ETH
+from settings import ROOT_EXT_KEY
 
 
 def key_resolver(key_id, algorithm):  # used for HTTPSignatureAuth.verify(), do not change arg names!
@@ -25,13 +28,24 @@ def sign_view(request):
         print('No dest address provided')
 
     try:
-        account = BlockchainAccount.objects.get(address=tx_params.pop('from'))
-    except BlockchainAccount.DoesNotExist:
-        raise PermissionDenied
+        if tx_params['contractId']:
+            contract_id = tx_params.pop('contractId')
+            hd_wallet = BIP44HDWallet(symbol=ETH, account=0, change=False, address=0)
+            hd_wallet.from_root_xprivate_key(ROOT_EXT_KEY)
+            derived_wallet = hd_wallet.from_index(contract_id)
+            priv = derived_wallet.private_key()
+            signed_tx = Web3().eth.account.sign_transaction(tx_params, priv)
+            raw_hex_tx = signed_tx.rawTransaction.hex()
+            return JsonResponse({'signed_tx': raw_hex_tx})
+    except KeyError:
+        try:
+            account = BlockchainAccount.objects.get(address=tx_params.pop('from'))
+        except BlockchainAccount.DoesNotExist:
+            raise PermissionDenied
 
-    if account.network_type == NetworkType.ETHEREUM_LIKE:
-        signed_tx = Web3().eth.account.sign_transaction(tx_params, account.private_key)
-        raw_hex_tx = signed_tx.rawTransaction.hex()
-        return JsonResponse({'signed_tx': raw_hex_tx})
-    elif account.network_type == NetworkType.BINANCE_CHAIN:
-        raise PermissionDenied
+        if account.network_type == NetworkType.ETHEREUM_LIKE:
+            signed_tx = Web3().eth.account.sign_transaction(tx_params, account.private_key)
+            raw_hex_tx = signed_tx.rawTransaction.hex()
+            return JsonResponse({'signed_tx': raw_hex_tx})
+        elif account.network_type == NetworkType.BINANCE_CHAIN:
+            raise PermissionDenied
