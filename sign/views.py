@@ -14,10 +14,10 @@ def key_resolver(key_id, algorithm):  # used for HTTPSignatureAuth.verify(), do 
     return secret.key.encode('utf-8')
 
 
-def get_pkey_from_child(child_idx):
+def get_pkey_from_child(child_id):
     hd_wallet = BIP44HDWallet(symbol=ETH, account=0, change=False, address=0)
     hd_wallet.from_root_xprivate_key(ROOT_EXT_KEY)
-    derived_wallet = hd_wallet.from_index(child_idx)
+    derived_wallet = hd_wallet.from_index(child_id)
     priv = derived_wallet.private_key()
     return priv
 
@@ -41,8 +41,8 @@ def sign_view(request):
         raise PermissionDenied
 
     if account.network_type == NetworkType.ETHEREUM_LIKE:
-        if tx_params.get('child_idx'):
-            priv = get_pkey_from_child(tx_params.pop('child_idx'))
+        if tx_params.get('child_id'):
+            priv = get_pkey_from_child(tx_params.pop('child_id'))
         else:
             priv = account.private_key
         signed_tx = Web3().eth.account.sign_transaction(tx_params, priv)
