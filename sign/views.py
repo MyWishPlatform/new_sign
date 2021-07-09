@@ -35,19 +35,19 @@ def sign_view(request):
     else:
         print('No destination address provided')
 
-    try:
-        account = BlockchainAccount.objects.get(address=tx_params.pop('from'))
-    except BlockchainAccount.DoesNotExist:
-        raise PermissionDenied
-
-    if account.network_type == NetworkType.ETHEREUM_LIKE:
-        if tx_params.get('child_id'):
-            priv = get_pkey_from_child(tx_params.pop('child_id'))
-        else:
+    if tx_params.get('child_id'):
+        priv = get_pkey_from_child(tx_params.pop('child_id'))
+    else:
+        try:
+            account = BlockchainAccount.objects.get(address=tx_params.pop('from'))
+        except BlockchainAccount.DoesNotExist:
+            raise PermissionDenied
+        if account.network_type == NetworkType.ETHEREUM_LIKE:
             priv = account.private_key
-        signed_tx = Web3().eth.account.sign_transaction(tx_params, priv)
+        elif account.network_type == NetworkType.BINANCE_CHAIN:
+            raise PermissionDenied
 
-        raw_hex_tx = signed_tx.rawTransaction.hex()
-        return JsonResponse({'signed_tx': raw_hex_tx})
-    elif account.network_type == NetworkType.BINANCE_CHAIN:
-        raise PermissionDenied
+
+    signed_tx = Web3().eth.account.sign_transaction(tx_params, priv)
+    raw_hex_tx = signed_tx.rawTransaction.hex()
+    return JsonResponse({'signed_tx': raw_hex_tx})
