@@ -47,7 +47,7 @@ def sign_view(request):
         elif account.network_type == NetworkType.BINANCE_CHAIN:
             raise PermissionDenied
 
-    print(f'{key}: {tx_params[key]}' for key in tx_params if key != 'data')
+    print(''.join(f'{key}: {tx_params[key]}' for key in tx_params if key != 'data'))
     signed_tx = Web3().eth.account.sign_transaction(tx_params, priv)
     raw_hex_tx = signed_tx.rawTransaction.hex()
     return JsonResponse({'signed_tx': raw_hex_tx})
