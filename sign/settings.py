@@ -85,7 +85,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-try:
-    from sign.settings_local import *
-except ImportError:
-    print('Cannot import local settings', flush=True)
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+ROOT_EXT_KEY = os.getenv('ROOT_EXT_KEY')
+FIELD_ENCRYPTION_KEYS = os.getenv('FIELD_ENCRYPTION_KEYS')
+
+if not all([SECRET_KEY, ROOT_EXT_KEY, FIELD_ENCRYPTION_KEYS]):
+    raise ImportError('environment variables are NOT SET in .env file')
