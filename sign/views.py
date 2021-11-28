@@ -27,7 +27,7 @@ def sign_view(request):
     try:
         HTTPSignatureAuth.verify(request, key_resolver=key_resolver)
     except (AssertionError, ClientSecret.DoesNotExist):
-        raise PermissionDenied
+        raise PermissionDenied("couldn't find SECRET_KEY with associated key_id")
 
     tx_params = request.data
     if tx_params.get('to'):
